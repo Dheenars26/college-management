@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>College Management System</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">🎓</div>
+
+            <div>
+                <h2>CMS</h2>
+                <p>COLLEGE MANAGEMENT</p>
+            </div>
+        </div>
+
+        <nav>
+
+            <button class="nav-item active" onclick="showPage('dashboard')">
+                📊 <span>Dashboard</span>
+            </button>
+
+            <button class="nav-item" onclick="showPage('students')">
+                👥 <span>Students</span>
+                <small>5</small>
+            </button>
+
+            <button class="nav-item" onclick="showPage('attendance')">
+                📅 <span>Attendance</span>
+                <small>Today</small>
+            </button>
+
+            <button class="nav-item" onclick="showPage('bus')">
+                🚌 <span>Bus Tracking</span>
+                <small>4</small>
+            </button>
+
+            <button class="nav-item" onclick="showPage('canteen')">
+                🍴 <span>Canteen & Food</span>
+                <small>5</small>
+            </button>
+
+            <button class="nav-item" onclick="showPage('reminders')">
+                🔔 <span>Reminders</span>
+                <small>4</small>
+            </button>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- HEADER -->
+        <header>
+
+            <div>
+                <h1 id="pageTitle">Executive Campus Dashboard</h1>
+
+                <div class="date">
+                    📅 <span id="currentDate"></span>
+
+                    <span class="mysql">
+                        ● MySQL 8.0
+                    </span>
+
+                    <button class="sync" onclick="syncData()">
+                        ↻ Sync
+                    </button>
+                </div>
+            </div>
+
+            <div class="top-menu">
+                <button onclick="showPage('dashboard')">Dashboard</button>
+                <button onclick="showPage('students')">Students</button>
+                <button onclick="showPage('attendance')">Attendance</button>
+                <button onclick="showPage('bus')">Bus Tracking</button>
+                <button onclick="showPage('canteen')">Canteen</button>
+                <button onclick="showPage('reminders')">Reminders</button>
+            </div>
+
+        </header>
+
+
+        <!-- CONTENT -->
+        <section class="content">
+
+
+            <!-- DASHBOARD -->
+            <div id="dashboard" class="page">
+
+                <div class="welcome">
+                    <h2>Welcome to College Management System</h2>
+                    <p>Manage your college activities from one place.</p>
+                </div>
+
+
+                <div class="cards">
+
+                    <div class="card">
+                        <div class="card-icon">👨‍🎓</div>
+                        <h3>Students</h3>
+                        <strong>5</strong>
+                        <p>Total Students</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h3>Attendance</h3>
+                        <strong>92%</strong>
+                        <p>Today's Attendance</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🚌</div>
+                        <h3>Bus Tracking</h3>
+                        <strong>4</strong>
+                        <p>Active Buses</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🍴</div>
+                        <h3>Canteen</h3>
+                        <strong>5</strong>
+                        <p>Available Items</p>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-grid">
+
+                    <div class="panel">
+                        <h2>Recent Students</h2>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>101</td>
+                                    <td>Arun Kumar</td>
+                                    <td>CSE</td>
+                                    <td><span class="status">Active</span></td>
+                                </tr>
+
+                                <tr>
+                                    <td>102</td>
+                                    <td>Priya</td>
+                                    <td>AI & DS</td>
+                                    <td><span class="status">Active</span></td>
+                                </tr>
+
+                                <tr>
+                                    <td>103</td>
+                                    <td>Rahul</td>
+                                    <td>ECE</td>
+                                    <td><span class="status">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+
+                    <div class="panel">
+
+                        <h2>Today's Reminders</h2>
+
+                        <div class="reminder">
+                            <span>📚</span>
+                            <div>
+                                <b>Assignment Submission</b>
+                                <p>Today - 5:00 PM</p>
+                            </div>
+                        </div>
+
+                        <div class="reminder">
+                            <span>📝</span>
+                            <div>
+                                <b>Internal Exam</b>
+                                <p>Tomorrow - 10:00 AM</p>
+                            </div>
+                        </div>
+
+                        <div class="reminder">
+                            <span>🎓</span>
+                            <div>
+                                <b>Department Meeting</b>
+                                <p>Friday - 2:00 PM</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- STUDENTS -->
+            <div id="students" class="page hidden">
+
+                <div class="page-header">
+                    <h2>Students</h2>
+
+                    <button class="primary" onclick="addStudent()">
+                        + Add Student
+                    </button>
+                </div>
+
+                <div class="panel">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Year</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="studentTable">
+
+                            <tr>
+                                <td>101</td>
+                                <td>Arun Kumar</td>
+                                <td>arun@gmail.com</td>
+                                <td>CSE</td>
+                                <td>3</td>
+                            </tr>
+
+                            <tr>
+                                <td>102</td>
+                                <td>Priya</td>
+                                <td>priya@gmail.com</td>
+                                <td>AI & DS</td>
+                                <td>2</td>
+                            </tr>
+
+                            <tr>
+                                <td>103</td>
+                                <td>Rahul</td>
+                                <td>rahul@gmail.com</td>
+                                <td>ECE</td>
+                                <td>4</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- ATTENDANCE -->
+            <div id="attendance" class="page hidden">
+
+                <div class="page-header">
+                    <h2>Attendance</h2>
+                </div>
+
+                <div class="cards">
+
+                    <div class="card">
+                        <h3>Total Students</h3>
+                        <strong>5</strong>
+                    </div>
+
+                    <div class="card">
+                        <h3>Present</h3>
+                        <strong>4</strong>
+                    </div>
+
+                    <div class="card">
+                        <h3>Absent</h3>
+                        <strong>1</strong>
+                    </div>
+
+                    <div class="card">
+                        <h3>Percentage</h3>
+                        <strong>92%</strong>
+                    </div>
+
+                </div>
+
+                <div class="panel">
+
+                    <h2>Today's Attendance</h2>
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+                                <td>Arun Kumar</td>
+                                <td>CSE</td>
+                                <td><span class="status">Present</span></td>
+                            </tr>
+
+                            <tr>
+                                <td>Priya</td>
+                                <td>AI & DS</td>
+                                <td><span class="status">Present</span></td>
+                            </tr>
+
+                            <tr>
+                                <td>Rahul</td>
+                                <td>ECE</td>
+                                <td><span class="absent">Absent</span></td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- BUS -->
+            <div id="bus" class="page hidden">
+
+                <div class="page-header">
+                    <h2>Bus Tracking</h2>
+                </div>
+
+                <div class="cards">
+
+                    <div class="card">
+                        <div class="card-icon">🚌</div>
+                        <h3>Bus 101</h3>
+                        <strong>Active</strong>
+                        <p>Dharmapuri Route</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🚌</div>
+                        <h3>Bus 102</h3>
+                        <strong>Active</strong>
+                        <p>Salem Route</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🚌</div>
+                        <h3>Bus 103</h3>
+                        <strong>Active</strong>
+                        <p>Bangalore Route</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🚌</div>
+                        <h3>Bus 104</h3>
+                        <strong>Stopped</strong>
+                        <p>Campus</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CANTEEN -->
+            <div id="canteen" class="page hidden">
+
+                <div class="page-header">
+                    <h2>Canteen & Food</h2>
+
+                    <button class="primary" onclick="addFood()">
+                        + Add Food
+                    </button>
+                </div>
+
+                <div class="food-grid">
+
+                    <div class="food">
+                        <h3>🍛 Meals</h3>
+                        <p>South Indian Meals</p>
+                        <strong>₹80</strong>
+                    </div>
+
+                    <div class="food">
+                        <h3>🥪 Sandwich</h3>
+                        <p>Veg Sandwich</p>
+                        <strong>₹50</strong>
+                    </div>
+
+                    <div class="food">
+                        <h3>🍔 Burger</h3>
+                        <p>Veg Burger</p>
+                        <strong>₹70</strong>
+                    </div>
+
+                    <div class="food">
+                        <h3>☕ Coffee</h3>
+                        <p>Hot Coffee</p>
+                        <strong>₹30</strong>
+                    </div>
+
+                    <div class="food">
+                        <h3>🍜 Noodles</h3>
+                        <p>Veg Noodles</p>
+                        <strong>₹60</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- REMINDERS -->
+            <div id="reminders" class="page hidden">
+
+                <div class="page-header">
+
+                    <h2>Reminders</h2>
+
+                    <button class="primary" onclick="addReminder()">
+                        + Add Reminder
+                    </button>
+
+                </div>
+
+                <div class="panel">
+
+                    <div class="reminder">
+                        <span>📚</span>
+
+                        <div>
+                            <h3>Assignment Submission</h3>
+                            <p>Today - 5:00 PM</p>
+                        </div>
+                    </div>
+
+                    <div class="reminder">
+                        <span>📝</span>
+
+                        <div>
+                            <h3>Internal Examination</h3>
+                            <p>Tomorrow - 10:00 AM</p>
+                        </div>
+                    </div>
+
+                    <div class="reminder">
+                        <span>🎓</span>
+
+                        <div>
+                            <h3>Department Meeting</h3>
+                            <p>Friday - 2:00 PM</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
