@@ -92,7 +92,7 @@
                     <div class="card">
                         <div class="card-icon">📊</div>
                         <h3>Attendance</h3>
-                        <strong id="dashAttendancePercent">100%</strong>
+                        <strong id="dashAttendancePercentage">0%</strong>
                         <p>Today's Attendance</p>
                     </div>
 
@@ -350,6 +350,38 @@
     </div>
 </div>
 
+<script>
+    // Tab switching logic
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+        const activePage = document.getElementById(pageId);
+        if (activePage) activePage.classList.remove('hidden');
+
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = Array.from(document.querySelectorAll('.nav-item')).find(btn => btn.getAttribute('onclick')?.includes(pageId));
+        if (activeBtn) activeBtn.classList.add('active');
+
+        const titleMap = {
+            'dashboard': 'Executive Campus Dashboard',
+            'students': 'Student Directory Management',
+            'attendance': 'Daily Attendance Tracker',
+            'bus': 'Live Bus Route Tracking',
+            'canteen': 'Canteen Menu & Orders',
+            'reminders': 'Upcoming Academic Reminders'
+        };
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl && titleMap[pageId]) titleEl.innerText = titleMap[pageId];
+    }
+
+    // Set today's date on header
+    document.addEventListener("DOMContentLoaded", () => {
+        const dateEl = document.getElementById("currentDate");
+        if (dateEl) {
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            dateEl.innerText = new Date().toLocaleDateString('en-US', options);
+        }
+    });
+</script>
 <script src="script.js"></script>
 <script src="students.js"></script>
 </body>

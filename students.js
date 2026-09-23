@@ -81,6 +81,8 @@ async function deleteStudent(id) {
 
     try {
         await apiRequest(`/api/students/${id}`, { method: "DELETE" });
+        // Clean state for deleted student
+        delete attendanceState[id];
         await syncData();
     } catch (error) {
         console.error("Error deleting student:", error);
@@ -152,6 +154,11 @@ function renderAttendanceTable(students) {
     const tbody = document.getElementById("attendanceTableBody");
     if (!tbody) return;
 
+    if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #94a3b8;">No students available</td></tr>`;
+        return;
+    }
+
     tbody.innerHTML = students.map(student => {
         const status = attendanceState[student.id] || "Present";
         return `
@@ -179,21 +186,24 @@ function updateStudentAttendance(studentId, newStatus) {
     });
 }
 
-// Real Attendance Recalculation
+// Real Attendance Recalculation (Defaults to 0% when 0 students exist)
 function recalculateAttendanceCounters(students) {
     const totalStudents = students.length;
     let presentCount = 0;
     let absentCount = 0;
 
-    students.forEach(student => {
-        const status = attendanceState[student.id] || "Present";
-        if (status === "Present") {
-            presentCount++;
-        } else {
-            absentCount++;
-        }
-    });
+    if (totalStudents > 0) {
+        students.forEach(student => {
+            const status = attendanceState[student.id] || "Present";
+            if (status === "Present") {
+                presentCount++;
+            } else {
+                absentCount++;
+            }
+        });
+    }
 
+    // Displays 0% when totalStudents === 0 instead of defaulting to 100%
     const percentage = totalStudents > 0 
         ? Math.round((presentCount / totalStudents) * 100) + "%" 
         : "0%";
