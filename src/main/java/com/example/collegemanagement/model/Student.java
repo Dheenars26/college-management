@@ -13,6 +13,8 @@ public class Student {
     private String name;
     private String email;
     private String department;
+
+    @Column(name = "\"year\"")
     private Integer year;
 
     // Default Constructor
