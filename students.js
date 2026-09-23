@@ -1,12 +1,17 @@
 // Base API URL
 const API_BASE_URL = window.API_BASE_URL || "https://college-management-production-408f.up.railway.app";
 
+// Local state tracking for attendance dropdowns
+let attendanceState = {};
+
 // Helper function for API requests
 async function apiRequest(path = "", options = {}) {
-    const response = await fetch(`${API_BASE_URL}${path}`, options);
+    const formattedPath = path.startsWith("/") ? path : `/${path}`;
+    const response = await fetch(`${API_BASE_URL}${formattedPath}`, options);
     const responseText = await response.text();
 
     if (!response.ok) {
+        console.error("API Error Response:", responseText);
         throw new Error(`API request failed (${response.status}): ${responseText || response.statusText}`);
     }
 
@@ -55,7 +60,6 @@ async function saveStudent(event) {
     const newStudent = { name, email, department, year };
 
     try {
-        // Updated route to match Spring Boot @RequestMapping("/api/students")
         await apiRequest("/api/students", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -67,7 +71,7 @@ async function saveStudent(event) {
         alert("Student added successfully!");
     } catch (error) {
         console.error("Error saving student:", error);
-        alert("Failed to save student. Please check network connection.");
+        alert("Failed to save student. Check backend database logs on Railway.");
     }
 }
 
@@ -76,7 +80,6 @@ async function deleteStudent(id) {
     if (!confirm("Are you sure you want to delete student ID " + id + "?")) return;
 
     try {
-        // Updated route to match Spring Boot @DeleteMapping("/api/students/{id}")
         await apiRequest(`/api/students/${id}`, { method: "DELETE" });
         await syncData();
     } catch (error) {
@@ -87,13 +90,19 @@ async function deleteStudent(id) {
 // Sync Data from Backend
 async function syncData() {
     try {
-        // Updated route to match Spring Boot @GetMapping("/api/students")
         const students = await apiRequest("/api/students");
         if (Array.isArray(students)) {
+            // Set initial attendance to Present for new entries
+            students.forEach(student => {
+                if (!attendanceState[student.id]) {
+                    attendanceState[student.id] = "Present";
+                }
+            });
+
             renderStudentsTable(students);
             renderDashboardRecent(students);
             renderAttendanceTable(students);
-            updateCounters(students.length);
+            recalculateAttendanceCounters(students);
         }
     } catch (error) {
         console.error("Error syncing data:", error);
@@ -138,47 +147,84 @@ function renderDashboardRecent(students) {
     `).join("");
 }
 
-// Render Attendance Table
+// Render Attendance Table with Interactive Selectors
 function renderAttendanceTable(students) {
     const tbody = document.getElementById("attendanceTableBody");
     if (!tbody) return;
 
-    tbody.innerHTML = students.map(student => `
-        <tr>
-            <td>${student.name}</td>
-            <td>${student.department}</td>
-            <td><span class="status">Present</span></td>
-        </tr>
-    `).join("");
+    tbody.innerHTML = students.map(student => {
+        const status = attendanceState[student.id] || "Present";
+        return `
+            <tr>
+                <td>${student.name}</td>
+                <td>${student.department}</td>
+                <td>
+                    <select onchange="updateStudentAttendance(${student.id}, this.value)" style="padding: 4px 8px; border-radius: 4px; background: #1e293b; color: #fff; border: 1px solid #475569;">
+                        <option value="Present" ${status === "Present" ? "selected" : ""}>Present</option>
+                        <option value="Absent" ${status === "Absent" ? "selected" : ""}>Absent</option>
+                    </select>
+                </td>
+            </tr>
+        `;
+    }).join("");
 }
 
-// Update Badges
-function updateCounters(total) {
+// Handle Attendance Change
+function updateStudentAttendance(studentId, newStatus) {
+    attendanceState[studentId] = newStatus;
+    apiRequest("/api/students").then(students => {
+        if (Array.isArray(students)) {
+            recalculateAttendanceCounters(students);
+        }
+    });
+}
+
+// Real Attendance Recalculation
+function recalculateAttendanceCounters(students) {
+    const totalStudents = students.length;
+    let presentCount = 0;
+    let absentCount = 0;
+
+    students.forEach(student => {
+        const status = attendanceState[student.id] || "Present";
+        if (status === "Present") {
+            presentCount++;
+        } else {
+            absentCount++;
+        }
+    });
+
+    const percentage = totalStudents > 0 
+        ? Math.round((presentCount / totalStudents) * 100) + "%" 
+        : "0%";
+
     const badge = document.getElementById("studentCountBadge");
     const dashCount = document.getElementById("dashTotalStudents");
+    if (badge) badge.innerText = totalStudents;
+    if (dashCount) dashCount.innerText = totalStudents;
+
+    const dashAttendancePct = document.getElementById("dashAttendancePercentage");
     const attTotal = document.getElementById("attendanceTotal");
     const attPresent = document.getElementById("attendancePresent");
     const attAbsent = document.getElementById("attendanceAbsent");
     const attPercentage = document.getElementById("attendancePercentage");
 
-    if (badge) badge.innerText = total;
-    if (dashCount) dashCount.innerText = total;
-
-    const percentage = total > 0 ? "100%" : "0%";
-    if (attTotal) attTotal.innerText = total;
-    if (attPresent) attPresent.innerText = total;
-    if (attAbsent) attAbsent.innerText = 0;
+    if (dashAttendancePct) dashAttendancePct.innerText = percentage;
+    if (attTotal) attTotal.innerText = totalStudents;
+    if (attPresent) attPresent.innerText = presentCount;
+    if (attAbsent) attAbsent.innerText = absentCount;
     if (attPercentage) attPercentage.innerText = percentage;
 }
 
-// Global scope bindings
+// Global Scope Exports
 window.openStudentModal = openStudentModal;
 window.closeStudentModal = closeStudentModal;
 window.saveStudent = saveStudent;
 window.deleteStudent = deleteStudent;
 window.syncData = syncData;
+window.updateStudentAttendance = updateStudentAttendance;
 
-// Attach bindings safely after DOM is loaded
+// DOM Initialization
 document.addEventListener("DOMContentLoaded", () => {
     syncData();
 
