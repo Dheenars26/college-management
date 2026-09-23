@@ -1,5 +1,5 @@
 // Base API URL (pointing directly to your Spring Boot endpoint)
-const API_BASE_URL = window.API_BASE_URL || "https://college-management-production-408f.up.railway.app/api/students";
+const API_BASE_URL = window.API_BASE_URL || https://college-management-production-408f.up.railway.app;
 
 // Helper function for API requests
 async function apiRequest(path = "", options = {}) {
