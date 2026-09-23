@@ -1,80 +1,186 @@
-const API_URL = "http://localhost:808/api/students";
+// Base API URL (pointing directly to your Spring Boot endpoint)
+const API_BASE_URL = window.API_BASE_URL || "https://college-management-production-408f.up.railway.app/api/students";
 
-// 1. Fetch and Display All Students
-async function loadStudents() {
-    try {
-        const response = await fetch(API_URL);
-        const students = await response.json();
-        
-        const tableBody = document.getElementById("studentTableBody");
-        tableBody.innerHTML = "";
+// Helper function for API requests
+async function apiRequest(path = "", options = {}) {
+    const response = await fetch(`${API_BASE_URL}${path}`, options);
+    const responseText = await response.text();
 
-        students.forEach(student => {
-            const row = `
-                <tr>
-                    <td>${student.id}</td>
-                    <td>${student.name}</td>
-                    <td>${student.email}</td>
-                    <td>${student.department}</td>
-                    <td>${student.year}</td>
-                    <td>
-                        <button onclick="deleteStudent(${student.id})">Delete</button>
-                    </td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
-    } catch (error) {
-        console.error("Error fetching students:", error);
+    if (!response.ok) {
+        throw new Error(`API request failed (${response.status}): ${responseText || response.statusText}`);
+    }
+
+    return responseText ? JSON.parse(responseText) : null;
+}
+
+// Open Form Modal Logic
+function openStudentModal() {
+    const modal = document.getElementById("studentModal");
+    if (modal) {
+        modal.classList.remove("hidden");
+    } else {
+        console.error("Target #studentModal was not found in DOM.");
     }
 }
 
-// 2. Add a New Student (POST)
-async function addStudent(event) {
-    event.preventDefault();
+// Close Form Modal Logic
+function closeStudentModal() {
+    const modal = document.getElementById("studentModal");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+    const form = document.getElementById("studentForm");
+    if (form) form.reset();
+}
 
-    const newStudent = {
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        department: document.getElementById("department").value,
-        year: parseInt(document.getElementById("year").value)
-    };
+// Save Student Form Submit
+async function saveStudent(event) {
+    if (event) event.preventDefault();
+
+    const nameEl = document.getElementById("studentName");
+    const emailEl = document.getElementById("studentEmail");
+    const deptEl = document.getElementById("studentDept");
+    const yearEl = document.getElementById("studentYear");
+
+    const name = nameEl ? nameEl.value.trim() : "";
+    const email = emailEl ? emailEl.value.trim() : "";
+    const department = deptEl ? deptEl.value.trim() : "";
+    const year = yearEl ? parseInt(yearEl.value, 10) : NaN;
+
+    if (!name || !email || !department || isNaN(year)) {
+        alert("Please fill in all input fields accurately.");
+        return;
+    }
+
+    const newStudent = { name, email, department, year };
 
     try {
-        const response = await fetch(API_URL, {
+        await apiRequest("", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newStudent)
         });
 
-        if (response.ok) {
-            alert("Student added successfully!");
-            document.getElementById("studentForm").reset();
-            loadStudents(); // Refresh the list
+        closeStudentModal();
+        await syncData();
+        alert("Student added successfully!");
+    } catch (error) {
+        console.error("Error saving student:", error);
+        alert("Failed to save student. Please check network connection.");
+    }
+}
+
+// Delete Student
+async function deleteStudent(id) {
+    if (!confirm("Are you sure you want to delete student ID " + id + "?")) return;
+
+    try {
+        await apiRequest(`/${id}`, { method: "DELETE" });
+        await syncData();
+    } catch (error) {
+        console.error("Error deleting student:", error);
+    }
+}
+
+// Sync Data from Backend
+async function syncData() {
+    try {
+        const students = await apiRequest();
+        if (Array.isArray(students)) {
+            renderStudentsTable(students);
+            renderDashboardRecent(students);
+            renderAttendanceTable(students);
+            updateCounters(students.length);
         }
     } catch (error) {
-        console.error("Error adding student:", error);
+        console.error("Error syncing data:", error);
     }
 }
 
-// 3. Delete a Student (DELETE)
-async function deleteStudent(id) {
-    if (confirm("Are you sure you want to delete this student?")) {
-        try {
-            const response = await fetch(`${API_URL}/${id}`, {
-                method: "DELETE"
-            });
+// Render Table
+function renderStudentsTable(students) {
+    const tableBody = document.getElementById("studentTable");
+    if (!tableBody) return;
 
-            if (response.ok) {
-                loadStudents(); // Refresh the list
-            }
-        } catch (error) {
-            console.error("Error deleting student:", error);
-        }
-    }
+    tableBody.innerHTML = "";
+    students.forEach(student => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${student.id}</td>
+            <td>${student.name}</td>
+            <td>${student.email}</td>
+            <td>${student.department}</td>
+            <td>${student.year}</td>
+            <td>
+                <button class="delete-btn" onclick="deleteStudent(${student.id})">Delete</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
 }
 
-// Call loadStudents when the page loads
-window.onload = loadStudents;
+// Render Recent
+function renderDashboardRecent(students) {
+    const tbody = document.getElementById("recentStudentsBody");
+    if (!tbody) return;
+
+    const recent = students.slice(-5).reverse();
+    tbody.innerHTML = recent.map(student => `
+        <tr>
+            <td>${student.id}</td>
+            <td>${student.name}</td>
+            <td>${student.department}</td>
+            <td><span class="status">Active</span></td>
+        </tr>
+    `).join("");
+}
+
+// Render Attendance Table
+function renderAttendanceTable(students) {
+    const tbody = document.getElementById("attendanceTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = students.map(student => `
+        <tr>
+            <td>${student.name}</td>
+            <td>${student.department}</td>
+            <td><span class="status">Present</span></td>
+        </tr>
+    `).join("");
+}
+
+// Update Badges
+function updateCounters(total) {
+    const badge = document.getElementById("studentCountBadge");
+    const dashCount = document.getElementById("dashTotalStudents");
+    const attTotal = document.getElementById("attendanceTotal");
+    const attPresent = document.getElementById("attendancePresent");
+    const attAbsent = document.getElementById("attendanceAbsent");
+    const attPercentage = document.getElementById("attendancePercentage");
+
+    if (badge) badge.innerText = total;
+    if (dashCount) dashCount.innerText = total;
+
+    const percentage = total > 0 ? "100%" : "0%";
+    if (attTotal) attTotal.innerText = total;
+    if (attPresent) attPresent.innerText = total;
+    if (attAbsent) attAbsent.innerText = 0;
+    if (attPercentage) attPercentage.innerText = percentage;
+}
+
+// Global scope bindings
+window.openStudentModal = openStudentModal;
+window.closeStudentModal = closeStudentModal;
+window.saveStudent = saveStudent;
+window.deleteStudent = deleteStudent;
+window.syncData = syncData;
+
+// Attach bindings safely after DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+    syncData();
+
+    const studentForm = document.getElementById("studentForm");
+    if (studentForm) {
+        studentForm.addEventListener("submit", saveStudent);
+    }
+});
