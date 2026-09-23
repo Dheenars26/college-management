@@ -1,5 +1,5 @@
-// Base API URL (pointing directly to your Spring Boot endpoint)
-const API_BASE_URL = window.API_BASE_URL || https://college-management-production-408f.up.railway.app;
+// Base API URL
+const API_BASE_URL = window.API_BASE_URL || "https://college-management-production-408f.up.railway.app";
 
 // Helper function for API requests
 async function apiRequest(path = "", options = {}) {
@@ -55,7 +55,8 @@ async function saveStudent(event) {
     const newStudent = { name, email, department, year };
 
     try {
-        await apiRequest("", {
+        // Updated route to match Spring Boot @RequestMapping("/api/students")
+        await apiRequest("/api/students", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newStudent)
@@ -75,7 +76,8 @@ async function deleteStudent(id) {
     if (!confirm("Are you sure you want to delete student ID " + id + "?")) return;
 
     try {
-        await apiRequest(`/${id}`, { method: "DELETE" });
+        // Updated route to match Spring Boot @DeleteMapping("/api/students/{id}")
+        await apiRequest(`/api/students/${id}`, { method: "DELETE" });
         await syncData();
     } catch (error) {
         console.error("Error deleting student:", error);
@@ -85,7 +87,8 @@ async function deleteStudent(id) {
 // Sync Data from Backend
 async function syncData() {
     try {
-        const students = await apiRequest();
+        // Updated route to match Spring Boot @GetMapping("/api/students")
+        const students = await apiRequest("/api/students");
         if (Array.isArray(students)) {
             renderStudentsTable(students);
             renderDashboardRecent(students);
